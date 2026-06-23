@@ -90,29 +90,82 @@ class Guitar:
     def getSpec(self):
         return self.spec
 
+class Style(Enum):
+    A = "A"
+    F = "F"
+
+
+class MandolinSpec:
+    def __init__(self, builder, model, typeG,
+                 backWood, topWood, style):
+
+        self.builder = builder
+        self.model = model
+        self.typeG = typeG
+        self.backWood = backWood
+        self.topWood = topWood
+        self.style = style
+
+    def matches(self, otherSpec):
+        return (
+            self.builder == otherSpec.builder and
+            self.model == otherSpec.model and
+            self.typeG == otherSpec.typeG and
+            self.backWood == otherSpec.backWood and
+            self.topWood == otherSpec.topWood and
+            self.style == otherSpec.style
+        )
+
+
+class Mandolin:
+    def __init__(self, serialNumber, price, spec):
+        self.serialNumber = serialNumber
+        self.price = price
+        self.spec = spec
+
+    def getSerialNumber(self):
+        return self.serialNumber
+
+    def getPrice(self):
+        return self.price
+
+    def getSpec(self):
+        return self.spec
+
 
 class Inventory:
     def __init__(self):
         self.guitars = []
+        self.mandolins = []
 
     def addGuitar(self, serialNumber, price, spec):
-        guitar = Guitar(serialNumber, price, spec)
-        self.guitars.append(guitar)
+        self.guitars.append(
+            Guitar(serialNumber, price, spec)
+        )
 
-    def getGuitar(self, serialNumber):
+    def addMandolin(self, serialNumber, price, spec):
+        self.mandolins.append(
+            Mandolin(serialNumber, price, spec)
+        )
+
+    def searchGuitar(self, searchSpec):
+        result = []
+
         for guitar in self.guitars:
-            if guitar.getSerialNumber() == serialNumber:
-                return guitar
-        return None
+            if guitar.getSpec().matches(searchSpec):
+                result.append(guitar)
 
-    def search(self, searchGuitar):
-        matchingGuitars = []
+        return result
 
-        for guitar in self.guitars:
-            if guitar.getSpec().matches(searchGuitar):
-                matchingGuitars.append(guitar)
+    def searchMandolin(self, searchSpec):
+        result = []
 
-        return matchingGuitars
+        for mandolin in self.mandolins:
+            if mandolin.getSpec().matches(searchSpec):
+                result.append(mandolin)
+
+        return result
+
 
 def initializeInventory(inventory):
 
@@ -124,14 +177,42 @@ def initializeInventory(inventory):
         Wood.ALDER,
         6
     )
+    mandolinSpec = MandolinSpec(
+        Builder.GIBSON,
+        "F5-G",
+        Type.ACOUSTIC,
+        Wood.MAHOGANY,
+        Wood.MAPLE,
+        Style.F
+    )
 
     inventory.addGuitar("V95693", 1499.95, spec1)
     inventory.addGuitar("V99999", 1599.95, spec1)
+    inventory.addMandolin("M12345",2499.95,mandolinSpec)
 
 def main():
 
     inventory = Inventory()
     initializeInventory(inventory)
+
+    searchSpec = MandolinSpec(
+        Builder.GIBSON,
+        "F5-G",
+        Type.ACOUSTIC,
+        Wood.MAHOGANY,
+        Wood.MAPLE,
+        Style.F
+    )
+
+    resultado = inventory.searchMandolin(searchSpec)
+
+    print("Mandolins encontradas:")
+
+    for mandolin in resultado:
+        print(
+            f"{mandolin.getSerialNumber()} "
+            f"- US${mandolin.getPrice():.2f}"
+        )
 
     whatErinLikes = GuitarSpec(
         Builder.FENDER,
@@ -141,8 +222,7 @@ def main():
         Wood.ALDER,
         6
     )
-
-    matchingGuitars = inventory.search(whatErinLikes)
+    matchingGuitars = inventory.searchGuitar(whatErinLikes)
 
     if matchingGuitars:
 
