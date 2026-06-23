@@ -24,100 +24,17 @@ class Wood(Enum):
     MAHOGANY = "mahogany"
     MAPLE = "maple"
 
-class GuitarSpec:
-    def __init__(self, builder, model, typeG,
-                 backWood, topWood, numStrings):
-
-        self.builder = builder
-        self.model = model
-        self.typeG = typeG
-        self.backWood = backWood
-        self.topWood = topWood
-        self.numStrings = numStrings
-
-    def getBuilder(self):
-        return self.builder
-
-    def getModel(self):
-        return self.model
-
-    def getTypeG(self):
-        return self.typeG
-
-    def getBackWood(self):
-        return self.backWood
-
-    def getTopWood(self):
-        return self.topWood
-
-    def getNumStrings(self):
-        return self.numStrings
-
-    def matches(self, otherSpec):
-
-        if self.builder != otherSpec.getBuilder():
-            return False
-
-        if str(self.model).lower() != str(otherSpec.getModel()).lower():
-            return False
-
-        if self.typeG != otherSpec.getTypeG():
-            return False
-
-        if self.backWood != otherSpec.getBackWood():
-            return False
-
-        if self.topWood != otherSpec.getTopWood():
-            return False
-
-        if self.numStrings != otherSpec.getNumStrings():
-            return False
-
-        return True
-
-class Guitar:
-    def __init__(self, serialNumber, price, spec):
-        self.serialNumber = serialNumber
-        self.price = price
-        self.spec = spec
-
-    def getSerialNumber(self):
-        return self.serialNumber
-
-    def getPrice(self):
-        return self.price
-
-    def getSpec(self):
-        return self.spec
-
+class InstrumentType(Enum):
+    GUITAR = "Guitar"
+    MANDOLIN = "Mandolin"
+    SAX = "Sax"
+    
 class Style(Enum):
     A = "A"
     F = "F"
 
+class Instrument:
 
-class MandolinSpec:
-    def __init__(self, builder, model, typeG,
-                 backWood, topWood, style):
-
-        self.builder = builder
-        self.model = model
-        self.typeG = typeG
-        self.backWood = backWood
-        self.topWood = topWood
-        self.style = style
-
-    def matches(self, otherSpec):
-        return (
-            self.builder == otherSpec.builder and
-            self.model == otherSpec.model and
-            self.typeG == otherSpec.typeG and
-            self.backWood == otherSpec.backWood and
-            self.topWood == otherSpec.topWood and
-            self.style == otherSpec.style
-        )
-
-
-class Mandolin:
     def __init__(self, serialNumber, price, spec):
         self.serialNumber = serialNumber
         self.price = price
@@ -132,121 +49,158 @@ class Mandolin:
     def getSpec(self):
         return self.spec
 
+class InstrumentSpec:
+
+    def __init__(self, properties):
+        self.properties = properties
+
+    def getProperty(self, propertyName):
+        return self.properties.get(propertyName)
+
+    def getProperties(self):
+        return self.properties
+
+    def matches(self, otherSpec):
+
+        for prop in otherSpec.getProperties():
+
+            if self.properties.get(prop) != otherSpec.getProperty(prop):
+                return False
+
+        return True
 
 class Inventory:
+
     def __init__(self):
-        self.guitars = []
-        self.mandolins = []
+        self.instruments = []
 
-    def addGuitar(self, serialNumber, price, spec):
-        self.guitars.append(
-            Guitar(serialNumber, price, spec)
+    def addInstrument(self, serialNumber, price, spec):
+
+        self.instruments.append(
+            Instrument(serialNumber, price, spec)
         )
 
-    def addMandolin(self, serialNumber, price, spec):
-        self.mandolins.append(
-            Mandolin(serialNumber, price, spec)
-        )
+    def search(self, searchSpec):
 
-    def searchGuitar(self, searchSpec):
-        result = []
+        matching = []
 
-        for guitar in self.guitars:
-            if guitar.getSpec().matches(searchSpec):
-                result.append(guitar)
+        for instrument in self.instruments:
 
-        return result
+            if instrument.getSpec().matches(searchSpec):
+                matching.append(instrument)
 
-    def searchMandolin(self, searchSpec):
-        result = []
-
-        for mandolin in self.mandolins:
-            if mandolin.getSpec().matches(searchSpec):
-                result.append(mandolin)
-
-        return result
-
+        return matching
 
 def initializeInventory(inventory):
-
-    spec1 = GuitarSpec(
-        Builder.FENDER,
-        "stratocastor",
-        Type.ELECTRIC,
-        Wood.ALDER,
-        Wood.ALDER,
-        6
-    )
-    mandolinSpec = MandolinSpec(
-        Builder.GIBSON,
-        "F5-G",
-        Type.ACOUSTIC,
-        Wood.MAHOGANY,
-        Wood.MAPLE,
-        Style.F
-    )
-
-    inventory.addGuitar("V95693", 1499.95, spec1)
-    inventory.addGuitar("V99999", 1599.95, spec1)
-    inventory.addMandolin("M12345",2499.95,mandolinSpec)
+    inventory.addInstrument(
+    "V95693",
+    1499.95,
+    InstrumentSpec({
+        "instrumentType": InstrumentType.GUITAR.value,
+        "builder": Builder.FENDER.value,
+        "model": "Stratocaster",
+        "type": Type.ELECTRIC.value,
+        "backWood": Wood.ALDER.value,
+        "topWood": Wood.ALDER.value,
+        "numStrings": 6
+    })
+)
+    inventory.addInstrument(
+    "M12345",
+    2499.95,
+    InstrumentSpec({
+        "instrumentType": InstrumentType.MANDOLIN.value,
+        "builder": Builder.GIBSON.value,
+        "model": "F5-G",
+        "type": Type.ACOUSTIC.value,
+        "backWood": Wood.MAHOGANY.value,
+        "topWood": Wood.MAPLE.value,
+        "style": Style.F.value
+    })
+)
+    inventory.addInstrument(
+    "SX1001",
+    3299.90,
+    InstrumentSpec({
+        "instrumentType": InstrumentType.SAX.value,
+        "builder": Builder.GIBSON.value,
+        "model": "YAS-280",
+        "finish": "Gold Lacquer",
+        "key": "Eb"
+    })
+)
 
 def main():
 
     inventory = Inventory()
     initializeInventory(inventory)
 
-    searchSpec = MandolinSpec(
-        Builder.GIBSON,
-        "F5-G",
-        Type.ACOUSTIC,
-        Wood.MAHOGANY,
-        Wood.MAPLE,
-        Style.F
-    )
+    searchMandolin = InstrumentSpec({
+        "instrumentType": InstrumentType.MANDOLIN.value,
+        "builder": Builder.GIBSON.value,
+        "model": "F5-G"
+    })
 
-    resultado = inventory.searchMandolin(searchSpec)
+    resultado = inventory.search(searchMandolin)
 
     print("Mandolins encontradas:")
 
-    for mandolin in resultado:
+    for instrumento in resultado:
         print(
-            f"{mandolin.getSerialNumber()} "
-            f"- US${mandolin.getPrice():.2f}"
+            f"{instrumento.getSerialNumber()} "
+            f"- US${instrumento.getPrice():.2f}"
         )
 
-    whatErinLikes = GuitarSpec(
-        Builder.FENDER,
-        "Stratocastor",
-        Type.ELECTRIC,
-        Wood.ALDER,
-        Wood.ALDER,
-        6
-    )
-    matchingGuitars = inventory.searchGuitar(whatErinLikes)
+    whatErinLikes = InstrumentSpec({
+        "instrumentType": InstrumentType.GUITAR.value,
+        "builder": Builder.FENDER.value,
+        "model": "Stratocaster"
+    })
+
+    matchingGuitars = inventory.search(whatErinLikes)
 
     if matchingGuitars:
 
-        print("Erin, talvez você goste destas:")
+        print("\nErin, talvez você goste destas guitarras:")
 
-        for guitar in matchingGuitars:
+        for instrument in matchingGuitars:
 
-            guitarSpec = guitar.getSpec()
+            spec = instrument.getSpec()
 
             print(
-                f"\nGuitarra: {guitar.getSerialNumber()} "
-                f"{guitarSpec.getBuilder().value} "
-                f"{guitarSpec.getModel()} "
-                f"{guitarSpec.getTypeG().value}\n"
-                f"{guitarSpec.getBackWood().value} na traseira e laterais,\n"
-                f"{guitarSpec.getTopWood().value} no tampo,\n"
-                f"com {guitarSpec.getNumStrings()} cordas\n"
-                f"Ela pode ser sua por apenas "
-                f"US${guitar.getPrice():.2f}!"
+                f"\nSerial: {instrument.getSerialNumber()}"
+                f"\nBuilder: {spec.getProperty('builder')}"
+                f"\nModelo: {spec.getProperty('model')}"
+                f"\nTipo: {spec.getProperty('type')}"
+                f"\nMadeira traseira: {spec.getProperty('backWood')}"
+                f"\nMadeira tampo: {spec.getProperty('topWood')}"
+                f"\nCordas: {spec.getProperty('numStrings')}"
+                f"\nPreço: US${instrument.getPrice():.2f}"
             )
 
     else:
         print("Desculpe Erin, não temos nada para você")
 
+    searchSax = InstrumentSpec({
+        "instrumentType": InstrumentType.SAX.value,
+        "key": "Eb"
+    })
+
+    saxes = inventory.search(searchSax)
+
+    print("\nSaxofones encontrados:")
+
+    for instrument in saxes:
+
+        spec = instrument.getSpec()
+
+        print(
+            f"\nSerial: {instrument.getSerialNumber()}"
+            f"\nModelo: {spec.getProperty('model')}"
+            f"\nAcabamento: {spec.getProperty('finish')}"
+            f"\nTom: {spec.getProperty('key')}"
+            f"\nPreço: US${instrument.getPrice():.2f}"
+        )
 
 if __name__ == "__main__":
     main()
